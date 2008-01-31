@@ -22,12 +22,11 @@ end
 if TextMate.selected_text
   partial_name =
     TextMate.input(
-      "Name of the new partial: (omit the _ and .html.erb)",
+      "Name of the new partial: (omit the _ and #{current_file.default_extension_for(:view)})",
       "partial", :title => "Create a partial from the selected text")
 
   if partial_name
-    path = current_file.dirname
-    partial = File.join(path, "_#{partial_name}.html.erb")
+    partial = current_file.find_view("_#{partial_name}").filepath
   
     # Create the partial file
     if File.exist?(partial)
@@ -73,10 +72,10 @@ else
           modules = pieces
         end
 
-        partial = File.join(current_file.rails_root, 'app', 'views', modules, "_#{partial_name}.html.erb")
+        partial = current_file.find_view("_#{partial_name}")
 
         text << "<!-- [[ Partial '#{partial}' Begin ]] -->\n"
-        text << IO.read(partial).gsub("\r\n", "\n")
+        text << IO.read(partial.filepath).gsub("\r\n", "\n")
         text << "<!-- [[ Partial '#{partial}' End ]] -->\n"
       end
     end

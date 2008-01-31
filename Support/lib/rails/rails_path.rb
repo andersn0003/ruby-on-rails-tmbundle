@@ -126,7 +126,7 @@ class RailsPath
   end
   
   # This is used in :file_type and :rails_path_for_view
-  VIEW_EXTENSIONS = %w( rhtml rxhtml rxml rjs erb builder )
+  VIEW_EXTENSIONS = %w( rhtml rxhtml rxml rjs html.erb xml.builder js.rjs )
 
   def file_type
     return @file_type if @file_type
@@ -198,7 +198,7 @@ class RailsPath
     case type
     when :javascript then '.js'
     when :stylesheet then '.css'
-    when :view       then '.html.erb'
+    when :view       then Version::view_file_extension
     else '.rb'
     end
   end
@@ -214,16 +214,21 @@ class RailsPath
   
   def rails_path_for_view
     return nil if action_name.nil?
-    
+    find_view(action_name)
+  end
+  
+  def find_view(view_name)
     file_exists = false
     VIEW_EXTENSIONS.each do |e|
-      filename_with_extension = action_name + "." + e
+      filename_with_extension = view_name + "." + e
       existing_view = File.join(rails_root, stubs[:view], modules, controller_name, filename_with_extension)
       return RailsPath.new(existing_view) if File.exist?(existing_view)
     end
-    default_view = File.join(rails_root, stubs[:view], modules, controller_name, action_name + default_extension_for(:view))
+    default_view = File.join(rails_root, stubs[:view], modules, controller_name, view_name + default_extension_for(:view))
     return RailsPath.new(default_view)
   end
+  
+  
   
   def ask_for_view(default_name = action_name)
     if designated_name = TextMate.input("Enter the name of the new view file:", default_name + default_extension_for(:view))
